@@ -95,7 +95,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					/* parse the flash... */
 					parsedFlash = new ESP32Flash(reader);
 					loadSpecs.add(new LoadSpec(this, 0, new LanguageCompilerSpecPair(
-							new LanguageID("xtensa:LE:32:esp32"), new CompilerSpecID("default")), true));
+							new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true));
 				} catch (Exception ex) {
 				}
 			} else {
@@ -105,7 +105,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					try {
 						parsedAppImage = new ESP32AppImage(reader);
 						loadSpecs.add(new LoadSpec(this, 0, new LanguageCompilerSpecPair(
-								new LanguageID("xtensa:LE:32:esp32"), new CompilerSpecID("default")), true));
+								new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true));
 					} catch (Exception ex) {}
 				}
 			}
@@ -211,7 +211,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				ElfLoader loader = new ElfLoader();
 
 				LoadSpec esp32LoadSpec = new LoadSpec(this, 0, new LanguageCompilerSpecPair(
-						new LanguageID("xtensa:LE:32:esp32"), new CompilerSpecID("default")), true);
+						new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true);
 				
 					List<Option> elfOpts = loader.getDefaultOptions(bap, esp32LoadSpec, null, true);
 					loader.load(bap,esp32LoadSpec,elfOpts, program,monitor, log);
