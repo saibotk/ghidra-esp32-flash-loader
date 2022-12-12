@@ -250,7 +250,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 	}
 
-	private void processPeripheral (Program program, FlatProgramAPI api, Element peripheral) throws DuplicateNameException, InvalidInputException, CodeUnitInsertionException, DataTypeConflictException, LockException, MemoryConflictException, AddressOverflowException {
+	private void processPeripheral (Program program, FlatProgramAPI api, Element peripheral) throws DuplicateNameException, InvalidInputException, CodeUnitInsertionException, LockException, MemoryConflictException, AddressOverflowException {
 		String baseAddrString = ((Element)(peripheral.getElementsByTagName("baseAddress").item(0))).getTextContent();
 		int baseAddr = Integer.decode(baseAddrString);
 		
@@ -323,6 +323,9 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		// TODO: If this loader has custom options, validate them here. Not all options
 		// require
 		// validation.
+		if(options.get(0).getValue() == null || options.get(0).getValue().equals("")) {
+			return "App partition not found in image.";
+		}
 		return null;
 		// return super.validateOptions(provider, loadSpec, options, program);
 	}
