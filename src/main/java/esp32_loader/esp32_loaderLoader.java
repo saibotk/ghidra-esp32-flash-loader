@@ -156,7 +156,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				if (program.getMemory().contains(api.toAddr(curSeg.LoadAddress),
 						api.toAddr(curSeg.LoadAddress + curSeg.Length)) == false) {
 					var memBlock = program.getMemory().createInitializedBlock(
-							curSeg.SegmentName + "_" + Integer.toHexString(curSeg.LoadAddress),
+							curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress),
 							api.toAddr(curSeg.LoadAddress), fileBytes, 0x00, curSeg.Length, false);
 					memBlock.setPermissions(curSeg.IsRead, curSeg.IsWrite, curSeg.IsExecute);
 					memBlock.setSourceName("ESP32 Loader");
@@ -164,7 +164,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					/* memory block already exists... */
 					MemoryBlock existingBlock = program.getMemory().getBlock(api.toAddr(curSeg.LoadAddress));
 					if (existingBlock != null) {
-						existingBlock.setName(curSeg.SegmentName + "_" + Integer.toHexString(curSeg.LoadAddress));
+						existingBlock.setName(curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress));
 						if (!existingBlock.isInitialized()) {
 							program.getMemory().convertToInitialized(existingBlock, (byte) 0x0);
 						}
@@ -183,7 +183,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 				}
 
 				/* Mark Instruction blocks as code */
-				if (curSeg.SegmentName.startsWith("I")) {
+				if (curSeg.isCodeSegment()) {
 					codeProp.add(api.toAddr(curSeg.LoadAddress), api.toAddr(curSeg.LoadAddress + curSeg.Length));
 				}
 

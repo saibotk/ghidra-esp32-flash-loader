@@ -6,6 +6,10 @@ import ghidra.app.util.bin.BinaryReader;
 
 public class ESP32AppSegment {
 
+	public enum SegmentType {
+		DRAM0, DRAM1, IF_TXT, IRAM0, IRAM1, DF_ROA, F_DATA, IRAM, IROM0, DROM0
+	}
+
 	public int PhysicalOffset;
 	public int LoadAddress;
 	public int Length;
@@ -14,7 +18,7 @@ public class ESP32AppSegment {
 	public boolean IsRead = false;
 	public boolean IsWrite = false;
 	public boolean IsExecute = false;
-	public String SegmentName;
+	public SegmentType type;
 	public boolean IsEsp32 = false;
 
 	public ESP32AppSegment(ESP32AppImage app, BinaryReader reader, boolean isEsp32S2) throws IOException {
@@ -39,7 +43,7 @@ public class ESP32AppSegment {
 				IsExecute = true;
 				IsRead = true;
 				IsWrite = true;
-				SegmentName = "DRAM0";
+				type = SegmentType.DRAM0;
 				return;
 			}
 
@@ -48,7 +52,7 @@ public class ESP32AppSegment {
 				IsExecute = true;
 				IsRead = true;
 				IsWrite = true;
-				SegmentName = "DRAM1";
+				type = SegmentType.DRAM1;
 				return;
 			}
 
@@ -56,7 +60,7 @@ public class ESP32AppSegment {
 			if (LoadAddress >= 0x40080000 && LoadAddress <= 0x40080000 + 4194304) {
 				IsExecute = true;
 				IsRead = true;
-				SegmentName = "IF_TXT";
+				type = SegmentType.IF_TXT;
 				return;
 			}
 			// OK
@@ -64,7 +68,7 @@ public class ESP32AppSegment {
 				IsExecute = true;
 				IsRead = true;
 				IsWrite = true;
-				SegmentName = "IRAM0";
+				type = SegmentType.IRAM0;
 				return;
 			}
 			// OK
@@ -72,7 +76,7 @@ public class ESP32AppSegment {
 				IsExecute = true;
 				IsRead = true;
 				IsWrite = true;
-				SegmentName = "IRAM1";
+				type = SegmentType.IRAM1;
 				return;
 			}
 
@@ -81,7 +85,7 @@ public class ESP32AppSegment {
 				IsExecute = false;
 				IsRead = true;
 				IsWrite = false;
-				SegmentName = "DF_ROA";
+				type = SegmentType.DF_ROA;
 				return;
 			}
 
@@ -95,14 +99,14 @@ public class ESP32AppSegment {
 				IsExecute = false;
 				IsRead = false;
 				IsWrite = true;
-				SegmentName = "F_DATA";
+				type = SegmentType.F_DATA;
 				return;
 			}
 
 			IsExecute = true;
 			IsRead = true;
 			IsWrite = true;
-			SegmentName = "IRAM";
+			type = SegmentType.IRAM;
 			return;
 
 		} else {
@@ -111,7 +115,7 @@ public class ESP32AppSegment {
 			if (LoadAddress >= 0x40800000 && LoadAddress <= 0x40800000 + 4194304) {
 				IsExecute = true;
 				IsRead = true;
-				SegmentName = "IROM0";
+				type = SegmentType.IROM0;
 				return;
 			}
 
@@ -119,7 +123,7 @@ public class ESP32AppSegment {
 				IsExecute = true;
 				IsRead = true;
 				IsWrite = true;
-				SegmentName = "IRAM0";
+				type = SegmentType.IRAM0;
 				return;
 			}
 
@@ -127,7 +131,7 @@ public class ESP32AppSegment {
 				IsExecute = true;
 				IsRead = true;
 				IsWrite = true;
-				SegmentName = "IRAM1";
+				type = SegmentType.IRAM1;
 				return;
 			}
 
@@ -135,7 +139,7 @@ public class ESP32AppSegment {
 				IsExecute = false;
 				IsRead = true;
 				IsWrite = false;
-				SegmentName = "DROM0";
+				type = SegmentType.DROM0;
 				return;
 			}
 
@@ -143,7 +147,7 @@ public class ESP32AppSegment {
 				IsExecute = false;
 				IsRead = true;
 				IsWrite = true;
-				SegmentName = "DRAM0";
+				type = SegmentType.DRAM0;
 				return;
 			}
 
@@ -151,17 +155,22 @@ public class ESP32AppSegment {
 				IsExecute = false;
 				IsRead = true;
 				IsWrite = true;
-				SegmentName = "DRAM1";
+				type = SegmentType.DRAM1;
 				return;
 			}
 
 			IsExecute = true;
 			IsRead = true;
 			IsWrite = true;
-			SegmentName = "IRAM";
+			type = SegmentType.IRAM;
 			return;
 
 		}
+	}
+
+	public boolean isCodeSegment() {
+		return this.type != null && (this.type == SegmentType.IF_TXT || this.type == SegmentType.IRAM
+				|| this.type == SegmentType.IRAM0 || this.type == SegmentType.IRAM1 || this.type == SegmentType.IROM0);
 	}
 
 }
