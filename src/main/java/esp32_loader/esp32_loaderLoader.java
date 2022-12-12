@@ -29,7 +29,6 @@ import ghidra.app.util.Option;
 import ghidra.app.util.bin.BinaryReader;
 import ghidra.app.util.bin.ByteArrayProvider;
 import ghidra.app.util.bin.ByteProvider;
-import ghidra.app.util.bin.format.elf.ElfLoadHelper;
 import ghidra.app.util.importer.MessageLog;
 import ghidra.app.util.opinion.AbstractLibrarySupportLoader;
 import ghidra.app.util.opinion.ElfLoader;
@@ -39,9 +38,7 @@ import ghidra.framework.model.DomainObject;
 import ghidra.framework.store.LockException;
 import ghidra.program.database.mem.FileBytes;
 import ghidra.program.flatapi.FlatProgramAPI;
-import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressOverflowException;
-import ghidra.program.model.data.DataTypeConflictException;
 import ghidra.program.model.data.DataTypeConflictHandler;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.UnsignedLongDataType;
@@ -54,7 +51,6 @@ import ghidra.program.model.mem.MemoryConflictException;
 import ghidra.program.model.symbol.SourceType;
 import ghidra.program.model.util.AddressSetPropertyMap;
 import ghidra.program.model.util.CodeUnitInsertionException;
-import ghidra.util.Msg;
 import ghidra.util.exception.CancelledException;
 import ghidra.util.exception.DuplicateNameException;
 import ghidra.util.exception.InvalidInputException;
@@ -74,7 +70,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		// TODO: Name the loader. This name must match the name of the loader in the
 		// .opinion
 		// files.
-		return "ESP32 Flash Image"; 
+		return "ESP32 Flash Image";
 	}
 
 	@Override
@@ -117,14 +113,14 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 	@Override
 	protected void load(ByteProvider provider, LoadSpec loadSpec, List<Option> options, Program program,
 			TaskMonitor monitor, MessageLog log) throws CancelledException, IOException {
-		
+
 		try {
 			processELF(program, options, monitor, log);
 		}catch(Exception ex) {
 			String exceptionTxt =ex.toString();
 			System.out.println(exceptionTxt);
 		}
-		
+
 		BinaryReader reader = new BinaryReader(provider, true);
 		FlatProgramAPI api = new FlatProgramAPI(program);
 		ESP32AppImage imageToLoad = null;
@@ -136,18 +132,17 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 			ESP32Partition part = parsedFlash.GetPartitionByName(partOpt);
 			try {
-			imageToLoad = part.ParseAppImage();
-			} catch(Exception ex) {
-				log.error("Parse error",ex.toString());
+				imageToLoad = part.ParseAppImage();
+			} catch (Exception ex) {
+				log.appendException(ex);
 			}
 		}
-		
-		
+
 		try {
 			AddressSetPropertyMap codeProp = program.getAddressSetPropertyMap("CodeMap");
 			if (codeProp == null) {
 				codeProp = program.createAddressSetPropertyMap("CodeMap");
-			} 
+			}
 
 			for (var x = 0; x < imageToLoad.SegmentCount; x++) {
 				var curSeg = imageToLoad.Segments.get(x);
@@ -165,7 +160,15 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					MemoryBlock existingBlock = program.getMemory().getBlock(api.toAddr(curSeg.LoadAddress));
 					if (existingBlock != null) {
 						existingBlock.setName(curSeg.SegmentName + "_" + Integer.toHexString(curSeg.LoadAddress));
-						existingBlock.putBytes(api.toAddr(curSeg.LoadAddress), curSeg.Data);
+						if(!existingBlock.isInitialized()) {
+							program.getMemory().convertToInitialized(existingBlock, (byte)0x0);							
+						}
+						try {
+							existingBlock.putBytes(api.toAddr(curSeg.LoadAddress), curSeg.Data);
+						}
+						catch (Exception ex) {
+							log.appendException(ex);
+						}
 						existingBlock.setSourceName("ELF + ESP32 Loader");
 					} else {
 						/* whoa, there be dragons here, the block exists but doesn't contain our start address... what? */
@@ -181,11 +184,11 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 			/* set the entry point */
 			program.getSymbolTable().addExternalEntryPoint(api.toAddr(imageToLoad.EntryAddress));
-			
+
 			/* Create Peripheral Device Memory Blocks */
 			if (imageToLoad.IsEsp32S2) {
 				log.appendMsg("Process esp32s2 svd");
-			}	
+			}
 			processSVD(program, api,imageToLoad.IsEsp32S2);
 			
 
@@ -197,12 +200,12 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 
 		// TODO: Load the bytes from 'provider' into the 'program'.
-		
+
 	}
-	
+
 	private void processELF(Program program, List<Option> options, TaskMonitor monitor, MessageLog log) throws Exception{
 		List<ResourceFile> elfFileList = Application.findFilesByExtensionInMyModule("elf");
-		
+
 		if (elfFileList.size() > 0) {
 			if (elfFileList.get(0).getName().equals("esp32_rom.elf")) {
 				/* load the ESP 32 BootROM elf */
@@ -212,8 +215,8 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 				LoadSpec esp32LoadSpec = new LoadSpec(this, 0, new LanguageCompilerSpecPair(
 						new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true);
-				
-					List<Option> elfOpts = loader.getDefaultOptions(bap, esp32LoadSpec, null, true);
+
+				List<Option> elfOpts = loader.getDefaultOptions(bap, esp32LoadSpec, null, true);
 					loader.load(bap,esp32LoadSpec,elfOpts, program,monitor, log);
 			}
 		}
@@ -229,20 +232,20 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			if (isESP32S2) {
 				if (!isFound) {
 					svdFile = svdFileList.get(1).getAbsolutePath();
-				} 
+				}
 			} else  {
 				if (isFound) {
 					svdFile = svdFileList.get(1).getAbsolutePath();
-				} 
+				}
 			}
 			DocumentBuilderFactory factory =
 			DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
-			
+
 			Document doc = builder.parse(svdFile);
-			
+
 			Element root = doc.getDocumentElement();
-			
+
 			NodeList peripherals = root.getElementsByTagName("peripheral");
 			for(var x=0; x < peripherals.getLength(); x++) {
 				processPeripheral(program, api, (Element)peripherals.item(x));
@@ -253,27 +256,27 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 	private void processPeripheral (Program program, FlatProgramAPI api, Element peripheral) throws DuplicateNameException, InvalidInputException, CodeUnitInsertionException, LockException, MemoryConflictException, AddressOverflowException {
 		String baseAddrString = ((Element)(peripheral.getElementsByTagName("baseAddress").item(0))).getTextContent();
 		int baseAddr = Integer.decode(baseAddrString);
-		
+
 		String peripheralName = ((Element)(peripheral.getElementsByTagName("name").item(0))).getTextContent();
 		Element addressBlock = (Element) peripheral.getElementsByTagName("addressBlock").item(0);
 		int size = Integer.decode(addressBlock.getElementsByTagName("size").item(0).getTextContent());
-		
+
 		registerPeripheralBlock(program, api, baseAddr, baseAddr + size - 1, peripheralName);
-		
+
 		StructureDataType struct = new StructureDataType(peripheralName, size);
-		
+
 		NodeList registers = peripheral.getElementsByTagName("register");
-		
+
 		for (var x = 0; x < registers.getLength(); x++) {
 			Element register = (Element)registers.item(x);
 			String registerName = ((Element)(register.getElementsByTagName("name").item(0))).getTextContent();
 			String offsetString = ((Element)(register.getElementsByTagName("addressOffset").item(0))).getTextContent();
 			int offsetValue = Integer.decode(offsetString);
-			
+
 			struct.replaceAtOffset(offsetValue, new UnsignedLongDataType() , 4, registerName, "");
-			
+
 		}
-		
+
 		var dtm = program.getDataTypeManager();
 		var space = program.getAddressFactory().getDefaultAddressSpace();
 		var listing = program.getListing();
@@ -282,13 +285,13 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		if (namespace == null) {
 			namespace = program.getSymbolTable().createNameSpace(null, "Peripherals", SourceType.ANALYSIS);
 		}
-		
+
 		var addr = space.getAddress(baseAddr);
 		dtm.addDataType(struct, DataTypeConflictHandler.REPLACE_HANDLER);
 		listing.createData( addr, struct);
 		symtbl.createLabel(addr, peripheralName, namespace, SourceType.USER_DEFINED );
 	}
-	
+
 	private void registerPeripheralBlock(Program program, FlatProgramAPI api, int startAddr, int endAddr, String name)
 			throws LockException, DuplicateNameException, MemoryConflictException, AddressOverflowException {
 		// TODO Auto-generated method stub
