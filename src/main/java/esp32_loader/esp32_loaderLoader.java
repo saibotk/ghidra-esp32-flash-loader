@@ -57,7 +57,6 @@ import ghidra.util.exception.InvalidInputException;
 import ghidra.util.task.TaskMonitor;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
-import java.io.*;
 
 /**
  * TODO: Provide class-level documentation that describes what this loader does.
@@ -124,7 +123,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			System.out.println(exceptionTxt);
 		}
 
-		BinaryReader reader = new BinaryReader(provider, true);
 		FlatProgramAPI api = new FlatProgramAPI(program);
 		ESP32AppImage imageToLoad = null;
 		if (parsedAppImage != null) {
@@ -201,10 +199,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			processSVD(program, api, imageToLoad.IsEsp32S2);
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			String msgText = e.getMessage();
-			e.printStackTrace();
-			log.error("Parse error", e.toString());
+			log.appendException(e);
 		}
 
 		// TODO: Load the bytes from 'provider' into the 'program'.
