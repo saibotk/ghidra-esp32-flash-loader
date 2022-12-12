@@ -15,9 +15,6 @@ public class ESP32AppSegment {
 	public int Length;
 	public byte[] Data;
 
-	public boolean IsRead = false;
-	public boolean IsWrite = false;
-	public boolean IsExecute = false;
 	public SegmentType type;
 	public boolean IsEsp32 = false;
 
@@ -32,59 +29,42 @@ public class ESP32AppSegment {
 
 			/* determine access type via memory map */
 			/*
-			 * Loading section .flash.rodata, size 0x576c lma 0x3f000020 DROM0 Loading
-			 * section .dram0.data, size 0x1e74 lma 0x3ffbe150 Loading section
-			 * .iram0.vectors, size 0x403 lma 0x40024000 Loading section .iram0.text, size
-			 * 0x9d40 lma 0x40024404 Loading section .flash.text, size 0x147f7 lma
-			 * 0x40080020
+			 * Loading section .flash.rodata, size 0x576c lma 0x3f000020 DROM0
+			 * Loading section .dram0.data, size 0x1e74 lma 0x3ffbe150
+			 * Loading section .iram0.vectors, size 0x403 lma 0x40024000
+			 * Loading section .iram0.text, size 0x9d40 lma 0x40024404
+			 * Loading section .flash.text, size 0x147f7 lma 0x40080020
 			 */
 			// OK
 			if (LoadAddress >= 0x3FFB0000 && LoadAddress <= 0x3FFB7FFF) {
-				IsExecute = true;
-				IsRead = true;
-				IsWrite = true;
 				type = SegmentType.DRAM0;
 				return;
 			}
 
 			// OK
 			if (LoadAddress >= 0x3FFB8000 && LoadAddress <= 0x3FFFFFFF) {
-				IsExecute = true;
-				IsRead = true;
-				IsWrite = true;
 				type = SegmentType.DRAM1;
 				return;
 			}
 
 			// OK
 			if (LoadAddress >= 0x40080000 && LoadAddress <= 0x40080000 + 4194304) {
-				IsExecute = true;
-				IsRead = true;
 				type = SegmentType.IF_TXT;
 				return;
 			}
 			// OK
 			if (LoadAddress >= 0x40020000 && LoadAddress <= 0x40027FFF) {
-				IsExecute = true;
-				IsRead = true;
-				IsWrite = true;
 				type = SegmentType.IRAM0;
 				return;
 			}
 			// OK
 			if (LoadAddress >= 0x40028000 && LoadAddress <= 0x4006FFFF) {
-				IsExecute = true;
-				IsRead = true;
-				IsWrite = true;
 				type = SegmentType.IRAM1;
 				return;
 			}
 
 			// OK
 			if (LoadAddress >= 0x3F000000 && LoadAddress <= 0x3F3F0000) {
-				IsExecute = false;
-				IsRead = true;
-				IsWrite = false;
 				type = SegmentType.DF_ROA;
 				return;
 			}
@@ -96,16 +76,10 @@ public class ESP32AppSegment {
 			 * return; }
 			 */
 			if (LoadAddress >= 0x3F800000 && LoadAddress <= 0x3F800000 + 4194304) {
-				IsExecute = false;
-				IsRead = false;
-				IsWrite = true;
 				type = SegmentType.F_DATA;
 				return;
 			}
 
-			IsExecute = true;
-			IsRead = true;
-			IsWrite = true;
 			type = SegmentType.IRAM;
 			return;
 
@@ -113,59 +87,54 @@ public class ESP32AppSegment {
 
 			/* determine access type via memory map */
 			if (LoadAddress >= 0x40800000 && LoadAddress <= 0x40800000 + 4194304) {
-				IsExecute = true;
-				IsRead = true;
 				type = SegmentType.IROM0;
 				return;
 			}
 
 			if (LoadAddress >= 0x40000000 && LoadAddress <= 0x40000000 + 4194304) {
-				IsExecute = true;
-				IsRead = true;
-				IsWrite = true;
 				type = SegmentType.IRAM0;
 				return;
 			}
 
 			if (LoadAddress >= 0x40400000 && LoadAddress <= 0x40400000 + 4194304) {
-				IsExecute = true;
-				IsRead = true;
-				IsWrite = true;
 				type = SegmentType.IRAM1;
 				return;
 			}
 
 			if (LoadAddress >= 0x3F400000 && LoadAddress <= 0x3F400000 + 4194304) {
-				IsExecute = false;
-				IsRead = true;
-				IsWrite = false;
 				type = SegmentType.DROM0;
 				return;
 			}
 
 			if (LoadAddress >= 0x3FF80000 && LoadAddress <= 0x3FF80000 + 524288) {
-				IsExecute = false;
-				IsRead = true;
-				IsWrite = true;
 				type = SegmentType.DRAM0;
 				return;
 			}
 
 			if (LoadAddress >= 0x3F800000 && LoadAddress <= 0x3F800000 + 4194304) {
-				IsExecute = false;
-				IsRead = true;
-				IsWrite = true;
 				type = SegmentType.DRAM1;
 				return;
 			}
 
-			IsExecute = true;
-			IsRead = true;
-			IsWrite = true;
 			type = SegmentType.IRAM;
 			return;
 
 		}
+	}
+	
+	public boolean isWrite() {
+		//There are definitely code segments that are writable, but it seems like it is common for the compiler to stick function pointers in the code
+		//segments. This means the decompiler will show the pointer being casted to `code *` and called, making it more difficult to read. If the 
+		//pointers are not writable, then the decompiler will helpfully show a function pointer call as a normal function call.
+		return this.type != null && this.type != SegmentType.DROM0 && this.type != SegmentType.IROM0 && !this.isCodeSegment();
+	}
+	
+	public boolean isRead() {
+		return this.type != null && this.type != SegmentType.F_DATA;
+	}
+	
+	public boolean isExecute() {
+		return this.isCodeSegment();
 	}
 
 	public boolean isCodeSegment() {
