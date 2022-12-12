@@ -18,10 +18,10 @@ public class PartitionOption extends Option implements ItemListener {
 		// TODO Auto-generated constructor stub
 		this.parsedFlash = parsedFlash;
 	}
-	
+
 	private String processPartitions(ESP32Flash parsedFlash) {
 		var defaultSelection = "";
-		
+
 		if (parsedFlash.SecondaryBootloader != null) {
 			cb.addItem("Bootloader");
 		}
@@ -45,10 +45,10 @@ public class PartitionOption extends Option implements ItemListener {
 				}
 			}
 
-			var firstPartition = parsedFlash.Partitions.get(0); 
+			var firstPartition = parsedFlash.Partitions.get(0);
 			cb.setSelectedItem(firstPartition);
 			cb.addItemListener(this);
-			
+
 			defaultSelection = cb.getItemAt(0);
 		}
 		return defaultSelection;

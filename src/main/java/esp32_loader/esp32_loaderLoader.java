@@ -58,12 +58,14 @@ import ghidra.util.task.TaskMonitor;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import java.io.*;
+
 /**
  * TODO: Provide class-level documentation that describes what this loader does.
  */
 public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 	ESP32Flash parsedFlash = null;
 	ESP32AppImage parsedAppImage = null;
+
 	@Override
 	public String getName() {
 
@@ -102,7 +104,8 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 						parsedAppImage = new ESP32AppImage(reader);
 						loadSpecs.add(new LoadSpec(this, 0, new LanguageCompilerSpecPair(
 								new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true));
-					} catch (Exception ex) {}
+					} catch (Exception ex) {
+					}
 				}
 			}
 		}
@@ -116,8 +119,8 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 		try {
 			processELF(program, options, monitor, log);
-		}catch(Exception ex) {
-			String exceptionTxt =ex.toString();
+		} catch (Exception ex) {
+			String exceptionTxt = ex.toString();
 			System.out.println(exceptionTxt);
 		}
 
@@ -127,7 +130,10 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		if (parsedAppImage != null) {
 			imageToLoad = parsedAppImage;
 		} else {
-			/* they probably gave us a firmware file, lets load that and get the partition they selected */
+			/*
+			 * they probably gave us a firmware file, lets load that and get the partition
+			 * they selected
+			 */
 			var partOpt = (String) (options.get(0).getValue());
 
 			ESP32Partition part = parsedFlash.GetPartitionByName(partOpt);
@@ -149,7 +155,8 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 
 				FileBytes fileBytes = MemoryBlockUtils.createFileBytes(program, new ByteArrayProvider(curSeg.Data),
 						0x00, curSeg.Length, monitor);
-				if (program.getMemory().contains(api.toAddr(curSeg.LoadAddress), api.toAddr(curSeg.LoadAddress + curSeg.Length)) == false) {
+				if (program.getMemory().contains(api.toAddr(curSeg.LoadAddress),
+						api.toAddr(curSeg.LoadAddress + curSeg.Length)) == false) {
 					var memBlock = program.getMemory().createInitializedBlock(
 							curSeg.SegmentName + "_" + Integer.toHexString(curSeg.LoadAddress),
 							api.toAddr(curSeg.LoadAddress), fileBytes, 0x00, curSeg.Length, false);
@@ -160,18 +167,20 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 					MemoryBlock existingBlock = program.getMemory().getBlock(api.toAddr(curSeg.LoadAddress));
 					if (existingBlock != null) {
 						existingBlock.setName(curSeg.SegmentName + "_" + Integer.toHexString(curSeg.LoadAddress));
-						if(!existingBlock.isInitialized()) {
-							program.getMemory().convertToInitialized(existingBlock, (byte)0x0);							
+						if (!existingBlock.isInitialized()) {
+							program.getMemory().convertToInitialized(existingBlock, (byte) 0x0);
 						}
 						try {
 							existingBlock.putBytes(api.toAddr(curSeg.LoadAddress), curSeg.Data);
-						}
-						catch (Exception ex) {
+						} catch (Exception ex) {
 							log.appendException(ex);
 						}
 						existingBlock.setSourceName("ELF + ESP32 Loader");
 					} else {
-						/* whoa, there be dragons here, the block exists but doesn't contain our start address... what? */
+						/*
+						 * whoa, there be dragons here, the block exists but doesn't contain our start
+						 * address... what?
+						 */
 					}
 				}
 
@@ -189,21 +198,21 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			if (imageToLoad.IsEsp32S2) {
 				log.appendMsg("Process esp32s2 svd");
 			}
-			processSVD(program, api,imageToLoad.IsEsp32S2);
-			
+			processSVD(program, api, imageToLoad.IsEsp32S2);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			String msgText = e.getMessage();
 			e.printStackTrace();
-			log.error("Parse error",e.toString());
+			log.error("Parse error", e.toString());
 		}
 
 		// TODO: Load the bytes from 'provider' into the 'program'.
 
 	}
 
-	private void processELF(Program program, List<Option> options, TaskMonitor monitor, MessageLog log) throws Exception{
+	private void processELF(Program program, List<Option> options, TaskMonitor monitor, MessageLog log)
+			throws Exception {
 		List<ResourceFile> elfFileList = Application.findFilesByExtensionInMyModule("elf");
 
 		if (elfFileList.size() > 0) {
@@ -217,29 +226,28 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 						new LanguageID("Xtensa:LE:32:default"), new CompilerSpecID("default")), true);
 
 				List<Option> elfOpts = loader.getDefaultOptions(bap, esp32LoadSpec, null, true);
-					loader.load(bap,esp32LoadSpec,elfOpts, program,monitor, log);
+				loader.load(bap, esp32LoadSpec, elfOpts, program, monitor, log);
 			}
 		}
 	}
 
-	private void processSVD(Program program, FlatProgramAPI api,boolean isESP32S2) throws Exception {
+	private void processSVD(Program program, FlatProgramAPI api, boolean isESP32S2) throws Exception {
 		// TODO Auto-generated method stub
-		List<ResourceFile> svdFileList =  Application.findFilesByExtensionInMyModule("svd");
+		List<ResourceFile> svdFileList = Application.findFilesByExtensionInMyModule("svd");
 		if (svdFileList.size() > 0) {
 			/* grab the first svd file ... */
 			String svdFile = svdFileList.get(0).getAbsolutePath();
-			boolean isFound = svdFile.indexOf("esp32s2") !=-1? true: false;
+			boolean isFound = svdFile.indexOf("esp32s2") != -1 ? true : false;
 			if (isESP32S2) {
 				if (!isFound) {
 					svdFile = svdFileList.get(1).getAbsolutePath();
 				}
-			} else  {
+			} else {
 				if (isFound) {
 					svdFile = svdFileList.get(1).getAbsolutePath();
 				}
 			}
-			DocumentBuilderFactory factory =
-			DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 
 			Document doc = builder.parse(svdFile);
@@ -247,17 +255,19 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			Element root = doc.getDocumentElement();
 
 			NodeList peripherals = root.getElementsByTagName("peripheral");
-			for(var x=0; x < peripherals.getLength(); x++) {
-				processPeripheral(program, api, (Element)peripherals.item(x));
+			for (var x = 0; x < peripherals.getLength(); x++) {
+				processPeripheral(program, api, (Element) peripherals.item(x));
 			}
 		}
 	}
 
-	private void processPeripheral (Program program, FlatProgramAPI api, Element peripheral) throws DuplicateNameException, InvalidInputException, CodeUnitInsertionException, LockException, MemoryConflictException, AddressOverflowException {
-		String baseAddrString = ((Element)(peripheral.getElementsByTagName("baseAddress").item(0))).getTextContent();
+	private void processPeripheral(Program program, FlatProgramAPI api, Element peripheral)
+			throws DuplicateNameException, InvalidInputException, CodeUnitInsertionException, LockException,
+			MemoryConflictException, AddressOverflowException {
+		String baseAddrString = ((Element) (peripheral.getElementsByTagName("baseAddress").item(0))).getTextContent();
 		int baseAddr = Integer.decode(baseAddrString);
 
-		String peripheralName = ((Element)(peripheral.getElementsByTagName("name").item(0))).getTextContent();
+		String peripheralName = ((Element) (peripheral.getElementsByTagName("name").item(0))).getTextContent();
 		Element addressBlock = (Element) peripheral.getElementsByTagName("addressBlock").item(0);
 		int size = Integer.decode(addressBlock.getElementsByTagName("size").item(0).getTextContent());
 
@@ -268,12 +278,12 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		NodeList registers = peripheral.getElementsByTagName("register");
 
 		for (var x = 0; x < registers.getLength(); x++) {
-			Element register = (Element)registers.item(x);
-			String registerName = ((Element)(register.getElementsByTagName("name").item(0))).getTextContent();
-			String offsetString = ((Element)(register.getElementsByTagName("addressOffset").item(0))).getTextContent();
+			Element register = (Element) registers.item(x);
+			String registerName = ((Element) (register.getElementsByTagName("name").item(0))).getTextContent();
+			String offsetString = ((Element) (register.getElementsByTagName("addressOffset").item(0))).getTextContent();
 			int offsetValue = Integer.decode(offsetString);
 
-			struct.replaceAtOffset(offsetValue, new UnsignedLongDataType() , 4, registerName, "");
+			struct.replaceAtOffset(offsetValue, new UnsignedLongDataType(), 4, registerName, "");
 
 		}
 
@@ -281,21 +291,22 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		var space = program.getAddressFactory().getDefaultAddressSpace();
 		var listing = program.getListing();
 		var symtbl = program.getSymbolTable();
-		var namespace = symtbl.getNamespace("Peripherals",null);
+		var namespace = symtbl.getNamespace("Peripherals", null);
 		if (namespace == null) {
 			namespace = program.getSymbolTable().createNameSpace(null, "Peripherals", SourceType.ANALYSIS);
 		}
 
 		var addr = space.getAddress(baseAddr);
 		dtm.addDataType(struct, DataTypeConflictHandler.REPLACE_HANDLER);
-		listing.createData( addr, struct);
-		symtbl.createLabel(addr, peripheralName, namespace, SourceType.USER_DEFINED );
+		listing.createData(addr, struct);
+		symtbl.createLabel(addr, peripheralName, namespace, SourceType.USER_DEFINED);
 	}
 
 	private void registerPeripheralBlock(Program program, FlatProgramAPI api, int startAddr, int endAddr, String name)
 			throws LockException, DuplicateNameException, MemoryConflictException, AddressOverflowException {
 		// TODO Auto-generated method stub
-		var block = program.getMemory().createUninitializedBlock(name, api.toAddr(startAddr), endAddr - startAddr + 1, false);
+		var block = program.getMemory().createUninitializedBlock(name, api.toAddr(startAddr), endAddr - startAddr + 1,
+				false);
 		block.setRead(true);
 		block.setWrite(true);
 
@@ -306,7 +317,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		 * memBlock.setPermissions(curSeg.IsRead, curSeg.IsWrite, curSeg.IsExecute);
 		 */
 	}
-
 
 	@Override
 	public List<Option> getDefaultOptions(ByteProvider provider, LoadSpec loadSpec, DomainObject domainObject,
@@ -326,7 +336,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		// TODO: If this loader has custom options, validate them here. Not all options
 		// require
 		// validation.
-		if(options.get(0).getValue() == null || options.get(0).getValue().equals("")) {
+		if (options.get(0).getValue() == null || options.get(0).getValue().equals("")) {
 			return "App partition not found in image.";
 		}
 		return null;
