@@ -24,6 +24,7 @@ import esp32_loader.flash.ESP32Flash;
 import esp32_loader.flash.ESP32Partition;
 import generic.jar.ResourceFile;
 import esp32_loader.flash.ESP32AppImage;
+import esp32_loader.flash.ESP32AppSegment.SegmentType;
 import ghidra.app.util.MemoryBlockUtils;
 import ghidra.app.util.Option;
 import ghidra.app.util.bin.BinaryReader;
@@ -155,9 +156,12 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 						0x00, curSeg.Length, monitor);
 				if (program.getMemory().contains(api.toAddr(curSeg.LoadAddress),
 						api.toAddr(curSeg.LoadAddress + curSeg.Length)) == false) {
-					var memBlock = program.getMemory().createInitializedBlock(
-							curSeg.type.name() + "_" + Integer.toHexString(curSeg.LoadAddress),
-							api.toAddr(curSeg.LoadAddress), fileBytes, 0x00, curSeg.Length, false);
+					var blockName = curSeg.type.name();
+					if (curSeg.type != SegmentType.DROM0 && curSeg.type != SegmentType.IROM0) {
+						blockName += "_" + Integer.toHexString(curSeg.LoadAddress);
+					}
+					var memBlock = program.getMemory().createInitializedBlock(blockName, api.toAddr(curSeg.LoadAddress),
+							fileBytes, 0x00, curSeg.Length, false);
 					memBlock.setPermissions(curSeg.isRead(), curSeg.isWrite(), curSeg.isExecute());
 					memBlock.setSourceName("ESP32 Loader");
 				} else {
