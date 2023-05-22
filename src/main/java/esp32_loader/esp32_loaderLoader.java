@@ -41,7 +41,6 @@ import ghidra.program.database.mem.FileBytes;
 import ghidra.program.flatapi.FlatProgramAPI;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.address.AddressOverflowException;
-import ghidra.program.model.data.DataTypeConflictException;
 import ghidra.program.model.data.DataTypeConflictHandler;
 import ghidra.program.model.data.StructureDataType;
 import ghidra.program.model.data.UnsignedLongDataType;
@@ -250,7 +249,7 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 		}
 	}
 
-	private void processPeripheral (Program program, FlatProgramAPI api, Element peripheral) throws DuplicateNameException, InvalidInputException, CodeUnitInsertionException, DataTypeConflictException, LockException, MemoryConflictException, AddressOverflowException {
+	private void processPeripheral (Program program, FlatProgramAPI api, Element peripheral) throws DuplicateNameException, InvalidInputException, CodeUnitInsertionException, LockException, MemoryConflictException, AddressOverflowException {
 		String baseAddrString = ((Element)(peripheral.getElementsByTagName("baseAddress").item(0))).getTextContent();
 		int baseAddr = Integer.decode(baseAddrString);
 		
