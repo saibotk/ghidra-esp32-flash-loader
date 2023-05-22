@@ -15,3 +15,10 @@ TODO, Use Dockerfile from here https://github.com/blacktop/docker-ghidra to buil
 If loading an elf file, load svd manually before doing analysis
 
 https://leveldown.de/blog/svd-loader/
+
+
+# NOTE:
+YOU MUST INSTALL `openjdk-11-jdk` with
+```
+sudo apt install openjdk-11-jdk
+```
