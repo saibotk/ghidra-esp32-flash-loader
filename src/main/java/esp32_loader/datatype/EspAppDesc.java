@@ -5,6 +5,7 @@ import java.io.RandomAccessFile;
 
 import ghidra.app.util.bin.BinaryReader;
 import ghidra.app.util.bin.StructConverter;
+import ghidra.app.util.bin.format.MemoryLoadable;
 import ghidra.app.util.bin.format.Writeable;
 import ghidra.program.model.data.ArrayDataType;
 import ghidra.program.model.data.ByteDataType;
@@ -16,7 +17,7 @@ import ghidra.program.model.data.StructureDataType;
 import ghidra.util.DataConverter;
 import ghidra.util.exception.DuplicateNameException;
 
-public class EspAppDesc implements StructConverter, Comparable<EspAppDesc>, Writeable {
+public class EspAppDesc implements StructConverter, Comparable<EspAppDesc>, Writeable, MemoryLoadable {
 	long magic_word;
 	long secure_version;
 	int[] reserv1;

@@ -281,8 +281,6 @@ public class esp32_loaderLoader extends AbstractLibrarySupportLoader {
 			String registerName = ((Element) (register.getElementsByTagName("name").item(0))).getTextContent();
 			String offsetString = ((Element) (register.getElementsByTagName("addressOffset").item(0))).getTextContent();
 			int offsetValue = Integer.decode(offsetString);
-			System.out.println(peripheralName);
-			System.out.println(registerName);
 
 			struct.replaceAtOffset(offsetValue, new UnsignedLongDataType(), 4, registerName, "");
 
