@@ -32,8 +32,6 @@ We are working on getting the necessary permissions to release this project unde
 
 ### Third party licenses
 
-- SVD Loader ([/ghidra_scripts](./ghidra_scripts)): Licensed under GPLv3 and the code in the `cmsis_svd` directory is
-  licensed under Apache 2.0.
 - Espressif SVD files ([/data/svd](./data/svd)): Licensed under Apache 2.0.
 - ESP32 ROM files ([/data/*.elf](./data)): Licensed under Apache 2.0., ROMs contain additional third-party-libraries,
   see
