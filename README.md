@@ -1,5 +1,21 @@
 # ESP32 Flash Image Loader for Ghidra
 
+This extension allows you to import ESP32 flash images into Ghidra.
+It can load either a full flash image with the bootloader and application or just the application part.
+
+In both cases, the image will be fully loaded into Ghidra with the correct address offsets and annotations.
+Additionally, the extension will load the ESP32 peripherals and their registers from the SVD files provided by
+Espressif.
+The ROM code for the associated ESP32 chip will also be loaded into Ghidra, so the code can be properly analyzed.
+
+It also includes several SVD-related scripts
+
+## Supported ESP32 chips:
+
+- ESP32
+- ESP32-S2
+- ESP32-C3
+
 ## Installation
 
 1. Download the latest release from the [releases page](https://github.com/saibotk/ghidra-esp32-flash-loader/releases)
