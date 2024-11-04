@@ -19,10 +19,11 @@ It also includes several SVD-related scripts
 ## Installation
 
 1. Download the latest release from the [releases page](https://github.com/saibotk/ghidra-esp32-flash-loader/releases)
-2. In Ghidra, go to `File -> Install Extensions...`
-3. Select the + icon in the top right corner
-4. Select the downloaded zip file and click OK
-5. Done! Restart Ghidra and you should be able to load ESP32 flash images
+2. Extract the zip file, it contains the actual extension zip file
+3. In Ghidra, go to `File -> Install Extensions...`
+4. Select the + icon in the top right corner
+5. Select the downloaded zip file and click OK
+6. Done! Restart Ghidra and you should be able to load ESP32 flash images
 
 ## Building the extension
 
