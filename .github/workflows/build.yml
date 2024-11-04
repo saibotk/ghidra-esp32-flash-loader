@@ -32,7 +32,7 @@ jobs:
           version: ${{ matrix.ghidra_version }}
 
       - name: Build plugin via gradle
-        run: gradle -PGHIDRA_INSTALL_DIR=${{ env.GHIDRA_INSTALL_DIR }} -PZIP_NAME_PREFIX=ghidra_${{ matrix.ghidra }}
+        run: gradle
 
       - name: Rename output zip
         run: mv dist/*_${{ matrix.ghidra_version }}_*.zip dist/ghidra_${{ matrix.ghidra_version }}_${{ github.event.repository.name }}.zip
