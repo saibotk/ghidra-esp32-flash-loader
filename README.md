@@ -44,12 +44,25 @@ Now you can install the extension as described above just select the zip file in
 
 ## Licenses
 
-This project currently has all rights reserved to the respective commit authors.  
-We are working on getting the necessary permissions to release this project under an open source license.
+This project and its code is licensed under Apache 2.0, unless specified otherwise.
+You can find the full license text in the [LICENSE](./LICENSE) file.
+Some folders contain third-party content, subject to their own licensing as described in the section below.
+
+The license was agreed upon in this discussion: 
+https://github.com/tslater2006/esp32_flash_loader/issues/6
 
 ### Third party licenses
 
 - Espressif SVD files ([/data/svd](./data/svd)): Licensed under Apache 2.0.
-- ESP32 ROM files ([/data/*.elf](./data)): Licensed under Apache 2.0., ROMs contain additional third-party-libraries,
-  see
+- ESP32 ROM files ([/data/*.elf](./data)): Licensed under Apache 2.0., ROMs contain additional third-party-libraries, see
   [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/COPYRIGHT.html#rom-source-code-copyrights).
+
+## Thanks
+
+A big thanks to the original upstream project for their contribution to open source their work.
+Also thanks to all the other contributors for their forks and improvements making this fork possible.
+We build upon the work of the following projects:
+
+- https://github.com/tslater2006/esp32_flash_loader (Original project)
+- https://github.com/Ebiroll/esp32_flash_loader (Fork)
+- https://github.com/dynacylabs/ghidra-esp32-flash-loader (Fork)
