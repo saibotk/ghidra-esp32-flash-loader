@@ -5,6 +5,14 @@ by [keep a changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## Unreleased
 
+## [v1.0.1](https://github.com/saibotk/ghidra-esp32-flash-loader/tree/v1.0.1) (2025-02-23)
+
+This is also the first official release, with the code licensed as Apache 2.0. 🥳
+
+### Fixed
+
+- Fixed missing manifest for Ghidra to recognize the extension.
+
 ## [v1.0.0](https://github.com/saibotk/ghidra-esp32-flash-loader/tree/v1.0.0) (2024-11-04)
 
 ### Added
