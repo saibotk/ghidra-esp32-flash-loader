@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         ghidra_version:
-          - "11.2"
+          - "11.3.1"
 
     steps:
       - uses: actions/checkout@v4
