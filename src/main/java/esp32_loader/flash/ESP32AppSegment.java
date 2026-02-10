@@ -21,6 +21,31 @@ public class ESP32AppSegment {
         // These can be found in the esptool targets: https://github.com/espressif/esptool/blob/master/esptool/targets/esp32c3.py
         // And then need to be renamed to match the tables from the technical specification memory section.
         switch (app.ChipId) {
+            case ESP32C2 -> {
+                if (LoadAddress >= 0x00000000 && LoadAddress < 0x00010000) {
+                    type = SegmentType.PADDING;
+                } else if (LoadAddress >= 0x3C000000 && LoadAddress < 0x3C400000) {
+                    type = SegmentType.EXT_DROM;
+                } else if (LoadAddress >= 0x3FCA0000 && LoadAddress < 0x3FCE0000) {
+                    type = SegmentType.DRAM1;
+                } else if (LoadAddress >= 0x3FC88000 && LoadAddress < 0x3FD00000) {
+                    type = SegmentType.UNKNOWN; // -> BYTE_ACCESSIBLE;
+                } else if (LoadAddress >= 0x3FF00000 && LoadAddress < 0x3FF50000) {
+                    type = SegmentType.DROM1;
+                } else if (LoadAddress >= 0x42000000 && LoadAddress < 0x42400000) {
+                    type = SegmentType.IROM0;
+                } else if (LoadAddress >= 0x40000000 && LoadAddress < 0x40090000) {
+                    type = SegmentType.IROM1; // -> IROM_MASK;
+                } else if (LoadAddress >= 0x42000000 && LoadAddress < 0x42400000) {
+                    type = SegmentType.EXT_IRAM;
+                } else if (LoadAddress >= 0x4037C000 && LoadAddress < 0x40380000) {
+                    type = SegmentType.IRAM0;
+                } else if (LoadAddress >= 0x40380000 && LoadAddress < 0x403C0000) {
+                    type = SegmentType.IRAM1;
+                } else {
+                    type = SegmentType.UNKNOWN;
+                }
+            }
             case ESP32C3 -> {
                 if (LoadAddress >= 0x00000000 && LoadAddress < 0x00010000) {
                     type = SegmentType.PADDING;
